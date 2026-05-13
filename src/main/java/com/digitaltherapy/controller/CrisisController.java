@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping("/crisis")
+@RequestMapping("/api/crisis")
 @RequiredArgsConstructor
 @Tag(name = "Crisis Support", description = "Crisis detection and support endpoints")
 public class CrisisController {

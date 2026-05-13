@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "digital-therapy-assistant": {
+      "command": "java",
+      "args": [
+        "-jar",
+        "target/digitaltherapy-0.0.1-SNAPSHOT.jar",
+        "--spring.profiles.active=mcp"
+      ]
+    }
+  }
+}

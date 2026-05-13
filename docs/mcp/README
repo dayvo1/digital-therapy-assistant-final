@@ -1,0 +1,26 @@
+## MCP Server
+
+Exposes the Digital Therapy Assistant as an MCP server for AI clients like Claude Desktop via stdio transport.
+
+### Setup
+
+```bash
+mvn package -DskipTests
+```
+
+Copy `claude_desktop_config.json` from the project root to `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows), update the absolute JAR path and Anthropic API key, then restart Claude Desktop.
+
+### Testing
+
+```bash
+npx @modelcontextprotocol/inspector java -jar target/digitaltherapy-0.0.1-SNAPSHOT.jar --spring.profiles.active=mcp
+```
+
+### Available Tools
+`start_session`, `chat_in_session`, `end_session`, `get_session_library`, `get_session_history`, `create_diary_entry`, `analyze_thought`, `suggest_reframing`, `detect_crisis`, `get_coping_strategies`, `get_weekly_progress`, `get_insights`
+
+### Available Resources
+`therapy://crisis/resources`, `therapy://distortions`, `therapy://sessions/{sessionId}`, `therapy://diary/{userId}`, `therapy://diary/entry/{entryId}`, `therapy://progress/{userId}`, `therapy://safetyplan/{userId}`
+
+### Available Prompts
+`thought_analysis`, `session_summary`, `weekly_check_in`

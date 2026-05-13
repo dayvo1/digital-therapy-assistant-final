@@ -21,7 +21,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping("/diary")
+@RequestMapping("/api/diary")
 @RequiredArgsConstructor
 @Tag(name = "Diary", description = "Thought diary management endpoints")
 public class DiaryController {

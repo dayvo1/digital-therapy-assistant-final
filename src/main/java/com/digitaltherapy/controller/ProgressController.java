@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping("/progress")
+@RequestMapping("/api/progress")
 @RequiredArgsConstructor
 @Tag(name = "Progress", description = "User progress tracking endpoints")
 public class ProgressController {

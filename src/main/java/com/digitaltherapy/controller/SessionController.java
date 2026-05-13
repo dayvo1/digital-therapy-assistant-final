@@ -19,7 +19,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping("/sessions")
+@RequestMapping("/api/sessions")
 @RequiredArgsConstructor
 @Tag(name = "Sessions", description = "Therapy session management endpoints")
 public class SessionController {
