@@ -8,8 +8,8 @@ services:
       - JWT_SECRET=
       - SPRING_CONFIG_LOCATION=classpath:/,file:/app/config/
     volumes:
-      - db-data:/app/data
-      - vector-data:/app/data/vectors
+      - ./data:/app/data
+      - ./data/vectors:/app/data/vectors
       - ./src/main/resources/application.properties:/app/config/application.properties
     networks:
       - app-network
@@ -22,8 +22,5 @@ services:
         condition: service_healthy
     networks:
       - app-network
-volumes:
-  db-data:
-  vector-data:
 networks:
   app-network:
