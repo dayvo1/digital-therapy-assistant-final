@@ -14,7 +14,7 @@ ENV ANTHROPIC_API_KEY=""
 ENV JWT_SECRET=""
 RUN addgroup --system appgroup
 RUN adduser  --system --ingroup appgroup non-root
-RUN chown -R non-root:non-root /app
+RUN chown -R non-root:appgroup /app
 USER non-root
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
     CMD curl -f http://localhost:8080/actuator/health || exit 1
