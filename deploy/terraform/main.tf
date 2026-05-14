@@ -24,7 +24,7 @@ data "aws_ami" "amazon_linux_2023" {
 }
 
 resource "aws_security_group" "app_sg" {
-  name        = "therapy-app-sg10"
+  name        = "therapy-app-sg11"
   description = "Allow SSH and App Traffic"
 
   ingress {
@@ -61,7 +61,6 @@ resource "aws_instance" "app_server" {
               #!/bin/bash
               sudo yum update -y
               sudo yum install -y docker
-              sudo yum install -y docker-compose-plugin
               sudo systemctl start docker
               sudo systemctl enable docker
               sudo usermod -aG docker ec2-user
