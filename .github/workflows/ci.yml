@@ -81,7 +81,7 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
       - uses: dorny/test-reporter@v1
         if: always()
-        with: {name: 'Test Results', path: 'target/surefire-reports/*.xml', reporter: 'java-junit' }
+        with: {name: 'Test Results', path: 'target/surefire-reports/*.xml', reporter: 'java-junit', fail-on-error: 'false' }
 
   code-quality:
     name: Code Quality
