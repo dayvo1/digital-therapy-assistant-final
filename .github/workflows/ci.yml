@@ -136,6 +136,17 @@ jobs:
           restore-keys: nvd-
       - name: Make Maven Wrapper Executable
         run: chmod a+x ./mvnw
+      - run: |
+          cat <<EOF > suppressions.xml
+          <?xml version="1.0" encoding="UTF-8"?>
+          <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+          <suppress>
+          <notes>False positive: OWASP Dependency-Check incorrectly maps spring-ai to obsolete VMware Server</notes>
+          <gav regex="true">^org\.springframework\.ai:spring-ai-starter-mcp-server:.*$</gav>
+          <cve>CVE-2009-3732</cve>
+          </suppress>
+          </suppressions>
+          EOF
       - name: Run OWASP Dependency-Check
         run: ./mvnw dependency-check:check -B
         env:
@@ -162,4 +173,8 @@ jobs:
       - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{secrets.ANTHROPIC_API_KEY}}
+          AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
