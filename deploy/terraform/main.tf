@@ -15,7 +15,7 @@ provider "aws" {
 
 # 1. The Firewall (Security Group)
 resource "aws_security_group" "app_sg" {
-  name        = "therapy-app-sg"
+  name        = "therapy-app-sg2"
   description = "Allow SSH and App Traffic"
 
   ingress {
