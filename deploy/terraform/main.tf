@@ -24,7 +24,7 @@ data "aws_ami" "amazon_linux_2023" {
 }
 
 resource "aws_security_group" "app_sg" {
-  name        = "therapy-app-sg3" # Staying with v2 to avoid naming conflicts
+  name        = "therapy-app-sg4"
   description = "Allow SSH and App Traffic"
 
   ingress {
@@ -53,7 +53,7 @@ resource "aws_instance" "app_server" {
   ami           = data.aws_ami.amazon_linux_2023.id
   instance_type = "t2.micro"
 
-  key_name      = "E90"
+  key_name      = "digital-therapy-key"
 
   vpc_security_group_ids = [aws_security_group.app_sg.id]
 
