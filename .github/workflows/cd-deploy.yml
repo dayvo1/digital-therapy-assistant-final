@@ -137,8 +137,8 @@ jobs:
           set -e
           # Clear any prior failed state from a transient boot-time pull error
           # so future systemctl checks aren't poisoned.
-          sudo systemctl reset-failed commission-calc.service 2>/dev/null || true
-          cd /opt/commission-calc
+          sudo systemctl reset-failed digitial-therapy-assistant.service 2>/dev/null || true
+          cd /opt/digital-therapy-assistant
           sudo docker compose pull
           sudo docker compose up -d
           sudo docker compose ps
