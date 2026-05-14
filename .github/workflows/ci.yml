@@ -103,8 +103,21 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
       - uses: codecov/codecov-action@v4
         with: {file: 'target/site/jacoco/jacoco.xml' }
-      - working-directory: frontend
+
+      - uses: actions/checkout@v6
+      
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run Lint
+        working-directory: frontend
         run: npm run lint --if-present
+      
 
   dependency-check:
     name: OWASP Dependency Check
