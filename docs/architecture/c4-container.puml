@@ -3,30 +3,44 @@
 
 LAYOUT_WITH_LEGEND()
 
-title Container Diagram - Digital Therapy Assistant
+title Container Diagram - Digital Therapy Assistant (Updated)
 
 Person(patient, "Patient", "Primary user seeking burnout recovery")
 Person(therapist, "Therapist", "Monitors patient progress")
+Person(aiClient, "AI Client", "Claude Desktop / Claude Code operator")
 
-System_Boundary(dta, "Digital Therapy Assistant") {
-    Container(cli, "CLI Application", "Java 21", "Command-line interface for user interaction with menu-driven CBT workflows")
-    Container(api, "Spring Boot Application", "Java 21, Spring Boot 4.0", "Provides REST API, business logic, security, and AI integration")
-    ContainerDb(h2db, "H2 Database", "H2 (File-based)", "Stores users, sessions, diary entries, chat messages, and cognitive distortions")
-    Container(vectorstore, "SimpleVector Store", "Java, In-Memory", "Vector storage for RAG similarity search using cosine similarity")
-    Container(kb, "Knowledge Base", "JSON Files", "CBT reference materials: distortions, techniques, crisis protocols")
+System_Boundary(dta, "Digital Therapy Assistant — AWS EC2 (Docker Compose)") {
+
+    Container(frontend, "Frontend", "Nginx, React, port 3000", "Web UI serving the CBT interface to patients and therapists. Acts as reverse proxy to backend on port 8080.")
+
+    Container(api, "Spring Boot Backend", "Java 21, Spring Boot 3.x, port 8080", "Provides REST API, business logic, JWT security, AI integration, and embeds the MCP server in stdio mode.")
+
+    Container(mcpServer, "MCP Server", "Java, stdio mode (embedded in Spring Boot)", "Exposes therapy data and CBT tools to AI clients (Claude Desktop / Claude Code) via the Model Context Protocol over stdio.")
+
+    ContainerDb(h2db, "H2 Database", "H2 file-based, Docker volume", "Stores users, sessions, diary entries, chat messages, and cognitive distortions. Persisted via a named Docker volume.")
+
+    Container(vectorstore, "SimpleVector Store", "Java, file-backed, Docker volume", "Vector storage for RAG similarity search using cosine similarity. Index persisted via a named Docker volume.")
+
+    Container(kb, "Knowledge Base", "JSON files, read-only bind mount", "CBT reference materials: distortions, techniques, crisis protocols. Loaded at startup.")
 }
 
-System_Ext(llm, "LLM Provider", "Anthropic Claude API")
+System_Ext(llm, "Anthropic Claude API", "LLM provider for AI-generated therapeutic responses")
+System_Ext(ghcr, "GitHub Container Registry", "Source of Docker images pulled on deployment")
 
-Rel(patient, cli, "Interacts via", "Terminal/Console")
-Rel(patient, api, "Makes API calls to", "HTTPS/JSON")
-Rel(therapist, api, "Monitors progress via", "HTTPS/JSON")
+Rel(patient, frontend, "Accesses CBT interface via browser", "HTTPS, port 3000")
+Rel(therapist, frontend, "Views patient progress via browser", "HTTPS, port 3000")
+Rel(aiClient, mcpServer, "Invokes MCP tools and queries therapy data", "stdio / MCP protocol")
 
-Rel(cli, api, "Calls services via", "Spring DI")
-Rel(api, h2db, "Reads/writes data", "JPA/JDBC")
-Rel(api, vectorstore, "Stores and queries embeddings", "Java API")
-Rel(api, kb, "Loads CBT reference content", "File I/O")
-Rel(vectorstore, kb, "Indexes content from", "Embeddings")
-Rel(api, llm, "Sends prompts, receives responses", "HTTPS/REST")
+Rel(frontend, api, "Proxies API requests to backend", "HTTP, port 8080 (reverse proxy)")
+
+Rel(api, mcpServer, "Hosts MCP server in-process", "stdio (embedded)")
+Rel(api, h2db, "Reads and writes structured data", "JPA/JDBC")
+Rel(api, vectorstore, "Stores and queries embeddings for RAG", "Java API")
+Rel(api, kb, "Loads CBT reference content at startup", "File I/O")
+Rel(vectorstore, kb, "Indexes content from knowledge base", "Embeddings")
+Rel(api, llm, "Sends prompts, receives AI responses", "HTTPS/REST")
+
+Rel(ghcr, frontend, "Image pulled on deployment", "Docker pull")
+Rel(ghcr, api, "Image pulled on deployment", "Docker pull")
 
 @enduml

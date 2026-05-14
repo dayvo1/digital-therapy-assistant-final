@@ -1,0 +1,101 @@
+@startuml c4-pipeline
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+
+skinparam activity {
+    BackgroundColor #DDEEFF
+    BorderColor #336699
+    FontColor #111111
+    ArrowColor #336699
+}
+
+skinparam partition {
+    BackgroundColor #F0F4FF
+    BorderColor #336699
+    FontColor #222222
+}
+
+skinparam note {
+    BackgroundColor #FFFDE7
+    BorderColor #F9A825
+}
+
+title CI/CD/CD Pipeline - Digital Therapy Assistant\n(Stage-Gate Pattern with GitHub Actions)
+
+|#E8F5E9| GitHub (Trigger) |
+start
+:Developer pushes commit or opens PR\nto **main** or **develop** branch;
+note right: Trigger:\ngit push / PR open\n→ github.com/org/dta
+
+|#DDEEFF| CI Workflow\n(ci.yml) |
+:**GATE: Build**\nCompile Java source with Maven\nFail fast on compilation errors;
+note right: mvn compile\nFails pipeline if compile errors
+
+fork
+    :**Unit Tests**\nmvn test (JUnit 5)\nComponent-level isolation;
+fork again
+    :**Integration Tests**\nmvn verify (Spring Boot Test)\nFull context + H2 in-memory DB;
+fork again
+    :**Code Quality**\nSonarQube / Checkstyle\nCoverage threshold ≥ 80%;
+fork again
+    :**Dependency Check**\nOWASP dependency-check\nFlag CVE vulnerabilities;
+fork again
+    :**Security Scan**\nTrivy filesystem scan\nBlock on HIGH/CRITICAL CVEs;
+end fork
+
+note right: All five checks run in **parallel**.\nAny failure blocks the pipeline here.
+
+:**GATE: CI Passed**\nAll parallel checks green → proceed;
+note right: PR cannot be merged\nuntil this gate passes.
+
+|#FFF8E1| CD Build Workflow\n(cd-build.yml) |
+note left: Trigger: push to **main** only\n(after PR merge / direct push)
+
+:**Build Docker Images**\n`docker build` frontend (Nginx+React)\n`docker build` backend (Spring Boot JAR);
+
+:**Push to Registry**\n`docker push ghcr.io/org/dta-frontend:<sha>`\n`docker push ghcr.io/org/dta-backend:<sha>`;
+note right: Tagged with:\n- git SHA (immutable)\n- `latest` (floating)
+
+:**Smoke Test**\nPull built images in CI runner\nStart containers with `docker compose up -d`\nHIT /actuator/health — expect HTTP 200;
+note right: Verifies images are runnable\nbefore touching production.
+
+:**GATE: Images Verified**\nSmoke test passes → proceed to deploy;
+
+|#FCE4EC| CD Deploy Workflow\n(cd-deploy.yml) |
+note left: Trigger: image gate passed\n(sequential, not parallel)
+
+:**Deploy to EC2**\nSSH into EC2 Elastic IP\n`docker compose pull`\n`docker compose up -d --remove-orphans`;
+note right: Uses GitHub Secret:\nEC2_SSH_KEY, EC2_HOST\nZero-downtime rolling restart
+
+:⏱**Wait for Startup**\nSleep 20 s — allow containers\nto initialise and bind ports;
+
+fork
+    :**Frontend Check**\ncurl http://EC2:3000/\nExpect HTTP 200;
+fork again
+    :⚙️ **Backend Health Check**\ncurl http://EC2:8080/actuator/health\nExpect {status:"UP"};
+end fork
+
+:**GATE: Post-Deployment Verification**\nBoth checks pass → deployment successful;
+
+|#E8F5E9| GitHub (Notify) |
+if (All gates passed?) then (yes)
+    :**Deployment Complete**\nGitHub Actions status: success\nCommit SHA deployed to EC2;
+    :Optional: post success summary\nto PR comment or Slack channel;
+else (no — any gate failed)
+    :**Pipeline Blocked**\nGitHub Actions status: failure\nPrevious stable image remains running on EC2;
+    :Notify team via\nGitHub Actions alert / email;
+endif
+
+stop
+
+legend right
+    |= Symbol |= Meaning |
+    | GATE | Stage boundary — failure blocks downstream |
+    | fork...end fork | Parallel execution |
+    | | Security-related step |
+    | | Docker operation |
+endlegend
+
+@enduml

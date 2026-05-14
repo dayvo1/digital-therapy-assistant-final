@@ -3,24 +3,34 @@
 
 LAYOUT_WITH_LEGEND()
 
-title System Context Diagram - Digital Therapy Assistant
+title System Context Diagram - Digital Therapy Assistant (Updated)
 
 Person(patient, "Patient", "Primary user seeking burnout recovery through CBT-based therapy")
 Person(therapist, "Therapist", "Mental health professional monitoring patient progress")
 Person(admin, "System Administrator", "Manages and maintains the platform")
+Person(aiClient, "AI Client", "Developer or operator using Claude Desktop / Claude Code to interact with the system via MCP")
 
-System(dta, "Digital Therapy Assistant", "AI-guided Cognitive Behavioral Therapy platform for workplace burnout recovery")
+System(dta, "Digital Therapy Assistant", "AI-guided Cognitive Behavioral Therapy platform for workplace burnout recovery. Deployed on AWS EC2 via Docker Compose.")
 
-System_Ext(llm, "LLM Provider", "AI language model service (Anthropic Claude / OpenAI / Gemini)")
+System_Ext(llm, "Anthropic Claude API", "LLM provider — processes prompts and returns AI-generated therapeutic responses")
 System_Ext(email, "Email Service", "Sends notifications and alerts to users")
 System_Ext(ehr, "Healthcare EHR Systems", "Electronic Health Record systems for FHIR data export")
+System_Ext(github, "GitHub", "Source control, CI/CD/CD pipeline automation via GitHub Actions")
+System_Ext(ghcr, "GitHub Container Registry", "Stores versioned Docker images built by the CI/CD pipeline")
+System_Ext(awsec2, "AWS EC2", "Cloud VM hosting the Docker Compose deployment with an Elastic IP")
 
-Rel(patient, dta, "Uses for CBT sessions, thought diary, progress tracking", "CLI / REST API")
-Rel(therapist, dta, "Monitors patient progress and reviews session data", "REST API")
-Rel(admin, dta, "Manages platform configuration and user accounts", "REST API")
+Rel(patient, dta, "Uses for CBT sessions, thought diary, progress tracking", "HTTPS / Browser (port 3000)")
+Rel(therapist, dta, "Monitors patient progress and reviews session data", "HTTPS / REST API (port 8080)")
+Rel(admin, dta, "Manages platform configuration and user accounts", "SSH / REST API")
+Rel(aiClient, dta, "Queries therapy data and executes tools via MCP", "stdio / MCP protocol")
 
 Rel(dta, llm, "Sends prompts, receives AI-generated therapeutic responses", "HTTPS/JSON")
 Rel(dta, email, "Sends notification emails", "SMTP")
 Rel(dta, ehr, "Exports patient progress data", "FHIR/REST")
+
+Rel(github, dta, "Builds, tests, and deploys updated images to EC2", "SSH / Docker Compose (CD)")
+Rel(github, ghcr, "Pushes versioned Docker images", "HTTPS / Docker")
+Rel(dta, ghcr, "Pulls Docker images on deployment", "HTTPS / Docker")
+Rel(dta, awsec2, "Runs inside EC2 instance", "Docker Compose")
 
 @enduml

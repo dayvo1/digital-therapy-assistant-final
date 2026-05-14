@@ -1,0 +1,57 @@
+@startuml c4-deployment
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Deployment.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Deployment Diagram - Digital Therapy Assistant on AWS EC2
+
+Person(patient, "Patient / Therapist", "Browser user accessing the app")
+Person(aiClient, "AI Client", "Claude Desktop or Claude Code using MCP over stdio")
+System_Ext(github, "GitHub Actions", "CI/CD pipeline runner, deploys via SSH")
+System_Ext(ghcr, "GitHub Container Registry", "ghcr.io stores versioned Docker images")
+System_Ext(anthropic, "Anthropic Claude API", "LLM backend at api.anthropic.com")
+
+Deployment_Node(aws, "Amazon Web Services", "Cloud Provider") {
+
+    Deployment_Node(ec2, "EC2 Instance", "Ubuntu 22.04 LTS, Elastic IP") {
+
+        Deployment_Node(sgNode, "Security Group", "Inbound: 22 SSH, 3000 Frontend, 8080 Backend") {
+
+            Deployment_Node(compose, "Docker Compose", "Container Orchestrator") {
+
+                Deployment_Node(frontendCtr, "frontend", "dta-frontend:latest") {
+                    Container(nginx, "Nginx + React SPA", "Nginx 1.25, port 3000", "Serves the React app and reverse-proxies API calls to backend on port 8080. Caches static assets.")
+                }
+
+                Deployment_Node(backendCtr, "backend", "dta-backend:latest") {
+                    Container(springBoot, "Spring Boot Application", "Java 21, port 8080", "REST API, JWT security, AI integration, RAG pipeline.")
+                    Container(mcpServer, "MCP Server", "Embedded in Spring Boot, stdio", "Exposes therapy data and CBT tools to AI clients via Model Context Protocol.")
+                }
+
+                Deployment_Node(secretsNode, "Secrets and Config", "Docker env_file") {
+                    Container(envVars, ".env file", "Environment variables", "Holds ANTHROPIC_API_KEY, JWT_SECRET, DB_PATH, VECTOR_STORE_PATH injected at startup.")
+                }
+            }
+
+            Deployment_Node(volumes, "Named Docker Volumes", "Persistent storage on EC2 disk") {
+                ContainerDb(dbVol, "dta-h2-data", "H2 file-based", "H2 database files: therapy-db.mv.db")
+                ContainerDb(vecVol, "dta-vector-data", "File-based index", "SimpleVectorStore index files")
+            }
+        }
+    }
+}
+
+' Relationships
+Rel(patient, nginx, "Accesses via browser", "HTTPS, port 3000")
+Rel(aiClient, mcpServer, "Issues MCP tool calls", "stdio, MCP protocol")
+Rel(github, ec2, "Deploys updated images and restarts services", "SSH, port 22")
+Rel(ghcr, frontendCtr, "Image pulled on deployment", "HTTPS")
+Rel(ghcr, backendCtr, "Image pulled on deployment", "HTTPS")
+Rel(nginx, springBoot, "Reverse-proxies API requests", "HTTP, port 8080")
+Rel(springBoot, mcpServer, "Hosts MCP server in-process", "stdio")
+Rel(springBoot, dbVol, "Reads and writes patient data", "File I/O, JPA")
+Rel(springBoot, vecVol, "Reads and writes vector index", "File I/O")
+Rel(springBoot, anthropic, "Sends prompts, receives AI responses", "HTTPS")
+Rel(envVars, springBoot, "Injects secrets at container startup", "Environment variables")
+
+@enduml
