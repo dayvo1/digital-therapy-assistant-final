@@ -89,7 +89,7 @@ jobs:
 
       - name: Compute lowercase image name
         id: img
-        run: echo "name=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/commission-calculator" >> "$GITHUB_OUTPUT"
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/digital-therapy-assistant" >> "$GITHUB_OUTPUT"
 
       - name: Build and push image
         uses: docker/build-push-action@v6
@@ -133,12 +133,12 @@ jobs:
 
       - name: Compute lowercase image name
         id: img
-        run: echo "name=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/commission-calculator-ui" >> "$GITHUB_OUTPUT"
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/digital-therapy-assistant-ui" >> "$GITHUB_OUTPUT"
 
       - name: Build and push UI image
         uses: docker/build-push-action@v6
         with:
-          context: ./sales-commission-calculator
+          context: ./frontend
           push: true
           tags: |
             ${{ steps.img.outputs.name }}:latest
