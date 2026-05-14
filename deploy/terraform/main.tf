@@ -24,7 +24,7 @@ data "aws_ami" "amazon_linux_2023" {
 }
 
 resource "aws_security_group" "app_sg" {
-  name        = "therapy-app-sg7"
+  name        = "therapy-app-sg8"
   description = "Allow SSH and App Traffic"
 
   ingress {
@@ -66,7 +66,7 @@ resource "aws_instance" "app_server" {
               sudo systemctl enable docker
               sudo usermod -aG docker ec2-user
               mkdir -p /opt/digital-therapy-assistant
-              sudo chown -R ec2-user:ec2-user /opt/commission-calc
+              sudo chown -R ec2-user:ec2-user /opt/digital-therapy-assistant
               EOF
 
   tags = {
