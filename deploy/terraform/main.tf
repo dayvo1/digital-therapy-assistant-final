@@ -24,7 +24,7 @@ data "aws_ami" "amazon_linux_2023" {
 }
 
 resource "aws_security_group" "app_sg" {
-  name        = "therapy-app-sg9"
+  name        = "therapy-app-sg10"
   description = "Allow SSH and App Traffic"
 
   ingress {
