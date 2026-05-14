@@ -6,11 +6,7 @@ terraform {
       version = "~> 5.0"
     }
   }
-  # This matches the bucket variable in your GitHub Action
-  backend "s3" {
-    key    = "digital-therapy/terraform.tfstate"
-    region = "us-east-1"
-  }
+
 }
 
 provider "aws" {
