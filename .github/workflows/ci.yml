@@ -31,7 +31,7 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Make Maven Wrapper Executable
-        run: chmod +x mvnw
+        run: chmod +x ./mvnw
 
       - name: Compile Java source
         run: ./mvnw --batch-mode compile -DskipTests
@@ -67,7 +67,7 @@ jobs:
         with: { java-version: '21', distribution: 'temurin', cache: 'maven' }
 
       - name: Make Maven Wrapper Executable
-        run: chmod +x mvnw
+        run: chmod +x ./mvnw
         
       - name: Run all tests
         run: ./mvnw test -B JaCoCo:report JaCoCo:check
@@ -89,7 +89,7 @@ jobs:
         with: { java-version: '21', distribution: 'temurin', cache: 'maven' }
 
       - name: Make Maven Wrapper Executable
-        run: chmod +x mvnw
+        run: chmod +x ./mvnw
       
       - name: CheckStyle, SpotBugs, and ESLINT
         run: ./mvnw verify -B -DskipTests checkstyle:check spotbugs:check
@@ -116,7 +116,7 @@ jobs:
           key: nvd-${{ github.run_id }}
           restore-keys: nvd-
       - name: Make Maven Wrapper Executable
-        run: chmod +x mvnw
+        run: chmod +x ./mvnw
       - name: Run OWASP Dependency-Check
         run: ./mvnw dependency-check:check -B
         env:
@@ -136,7 +136,7 @@ jobs:
       - uses: github/codeql-action/init@v4
         with: {languages: 'java'}
       - name: Make Maven Wrapper Executable
-        run: chmod +x mvnw
+        run: chmod +x ./mvnw
       - name: Compile CodeQL analysis
         run: ./mvnw compile -B -DskipTests
       - uses: github/codeql-action/analyze@v4
